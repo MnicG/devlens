@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff - análise estática
+        entry: python -m ruff check
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: Ruff - formatação
+        entry: python -m ruff format --check
+        language: system
+        types: [python]
+
+      - id: gitleaks
+        name: Gitleaks - detecção de segredos
+        entry: bash -c '"$HOME/.local/bin/gitleaks" git --pre-commit --staged --redact --verbose'
+        language: system
+        pass_filenames: false
+        always_run: true

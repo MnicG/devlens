@@ -1,0 +1,61 @@
+name: DevLens CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Testes e qualidade
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Executar testes
+        run: python -m pytest
+
+      - name: Verificar Ruff
+        run: python -m ruff check backend
+
+      - name: Verificar formatacao
+        run: python -m ruff format --check backend
+
+      - name: Verificar tipos
+        run: python -m mypy backend/app backend/tests
+
+      - name: Auditar dependencias
+        run: python -m pip_audit
+
+  secrets:
+    name: Detectar segredos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar historico completo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Executar Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
