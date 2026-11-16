@@ -893,3 +893,35 @@ def test_local_repo_source_git_blame_rejects_git_path(
 
     with pytest.raises(PermissionError, match="Invalid repository path"):
         source.git_blame(commit, ".git/config", 1, 1)
+
+
+def test_local_repo_source_git_log_rejects_git_path(
+    tmp_path: Path,
+) -> None:
+    from app.tools.repo_source import LocalRepoSource
+
+    allowed_root = tmp_path / "repos"
+    repository = allowed_root / "project"
+    repository.mkdir(parents=True)
+
+    commit = create_committed_repository(repository)
+    source = LocalRepoSource(repository, [allowed_root])
+
+    with pytest.raises(PermissionError, match="Invalid repository path"):
+        source.git_log(commit, ".git/config", 10)
+
+
+def test_local_repo_source_diff_rejects_git_path(
+    tmp_path: Path,
+) -> None:
+    from app.tools.repo_source import LocalRepoSource
+
+    allowed_root = tmp_path / "repos"
+    repository = allowed_root / "project"
+    repository.mkdir(parents=True)
+
+    commit = create_committed_repository(repository)
+    source = LocalRepoSource(repository, [allowed_root])
+
+    with pytest.raises(PermissionError, match="Invalid repository path"):
+        source.diff(commit, commit, ".git/config")
