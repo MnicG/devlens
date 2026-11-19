@@ -125,7 +125,7 @@ class LocalRepoSource:
         ):
             raise ValueError("Git returned an invalid commit SHA")
 
-        return commit
+        return str(commit)
 
     def read_file(self, commit: str, path: str) -> str:
         import posixpath
@@ -223,7 +223,7 @@ class LocalRepoSource:
             raise ValueError("Unable to read file object")
 
         try:
-            return stdout.decode("utf-8")
+            return str(stdout.decode("utf-8"))
         except UnicodeDecodeError as exc:
             raise ValueError("File is not valid UTF-8 text") from exc
 
@@ -416,6 +416,7 @@ class LocalRepoSource:
         try:
             output = self._git.blame(
                 "--line-porcelain",
+                "--no-textconv",
                 "-L",
                 f"{start},{end}",
                 commit,
@@ -563,9 +564,11 @@ class LocalRepoSource:
             arguments.extend(["--", *safe_paths])
 
         try:
-            return self._git.diff(
-                *arguments,
-                env={"GIT_LITERAL_PATHSPECS": "1"},
+            return str(
+                self._git.diff(
+                    *arguments,
+                    env={"GIT_LITERAL_PATHSPECS": "1"},
+                )
             )
         except GitCommandError as exc:
             raise ValueError("Unable to compare Git commits") from exc
